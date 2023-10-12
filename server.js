@@ -1,13 +1,16 @@
-// app.js
 const express = require('express');
-const apiRoutes = require('./routes/userRoutes');
+const userRoutes = require('./routes/userRoutes');
+const errorHandler = require("./middleware/errorHandling");
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(express.json());
+app.use('/api/v1', userRoutes);
+app.use(errorHandler);
 
-app.use('/api', apiRoutes);
+// Use the error handling middleware
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

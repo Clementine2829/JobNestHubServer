@@ -1,3 +1,4 @@
+const { json } = require("express");
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 
@@ -18,6 +19,9 @@ const validateToken = asyncHandler(async (req, res, next) => {
             res.status(401);
             throw new Error("User is not authorized or token is missing/expired");
         }
+    }else{
+        res.status(401);
+        throw new Error("User is not authorized or token is missing/expired");
     }
 });
 

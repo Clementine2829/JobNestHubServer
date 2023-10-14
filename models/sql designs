@@ -11,16 +11,16 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     user_type VARCHAR(20) NOT NULL,
     profile_status INT NOT NULL,
-    created_at VARCHAR(20) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE phone_number(
     phone_id VARCHAR(30) PRIMARY KEY,
     user_id VARCHAR(45) NOT NULL,
     phone_number VARCHAR(10) NOT NULL,
-    created_at VARCHAR(20) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
@@ -30,8 +30,8 @@ CREATE TABLE address(
     street VARCHAR(100) NOT NULL,
     city VARCHAR(30) NOT NULL,
     zipcode VARCHAR(100) NOT NULL,
-    created_at VARCHAR(20) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
@@ -40,8 +40,8 @@ CREATE TABLE notifications(
     user_id VARCHAR(45) NOT NULL,
     notification TEXT NOT NULL,
     status INT NOT NULL,
-    created_at VARCHAR(20) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
@@ -49,7 +49,7 @@ CREATE TABLE reset_password(
     reset_id VARCHAR(30) PRIMARY KEY,
     user_id VARCHAR(45) NOT NULL,
     token VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_created TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
@@ -57,14 +57,14 @@ CREATE TABLE subscribers(
     subscriber_id VARCHAR(30) PRIMARY KEY,
     email VARCHAR(50) NOT NULL,
     subscriber VARCHAR(45) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    date_created TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE verify_users (
     id VARCHAR (30) PRIMARY KEY,
     user_id VARCHAR(45) NOT NULL,
     token VARCHAR(255) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
@@ -78,22 +78,22 @@ CREATE TABLE resume_extended_info(
     gender int NOT NUll,
     nationality VARCHAR (50) NOT NUll,
     race VARCHAR (50) NOT NUll,
-    created_at VARCHAR(20) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
 CREATE TABLE resume_about_myself(
     about_myself_id VARCHAR(30) PRIMARY KEY,
     about_myself TEXT NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE resume_field_of_experties(
     experties_id VARCHAR(30) PRIMARY KEY,
     experties VARCHAR(100) NOT NULL,
     user_id VARCHAR(45) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
@@ -101,7 +101,7 @@ CREATE TABLE resume_skills(
     skills_id VARCHAR(30) PRIMARY KEY,
     skills VARCHAR(100) NOT NULL,
     user_id VARCHAR(45) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
@@ -111,7 +111,7 @@ CREATE TABLE resume_references(
     ref_email VARCHAR(100) NOT NULL,
     ref_phone VARCHAR(10) NOT NULL,
     ref_organization VARCHAR(100) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE resume_high_school(
@@ -119,7 +119,7 @@ CREATE TABLE resume_high_school(
     user_id VARCHAR(45) NOT NULL,
     school_name VARCHAR(100) NOT NULL,
     school_location VARCHAR(150) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
@@ -131,7 +131,7 @@ CREATE TABLE resume_education(
     field_of_study VARCHAR(100) NOT NULL,
     start_date VARCHAR(20) NOT NULL,
     end_date VARCHAR(20) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
@@ -143,7 +143,7 @@ CREATE TABLE resume_experience(
     start_date VARCHAR(20) NOT NULL,
     end_date VARCHAR(20) NOT NULL,
     job_description TEXT NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (user_id) references users(user_id) on delete cascade
 );
 
@@ -162,8 +162,8 @@ CREATE TABLE company (
     company_phone VARCHAR(10) NOT NULL,
     company_logo VARCHAR(30) NOT NULL,
     company_status INT NOT NULL,
-    created_at VARCHAR(20) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE company_address (
@@ -172,8 +172,8 @@ CREATE TABLE company_address (
     street VARCHAR(100) NOT NULL,
     city VARCHAR(30) NOT NULL,
     zipcode VARCHAR(100) NOT NULL,
-    created_at VARCHAR(20) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (company_id) references company(company_id) on delete cascade
 );
 
@@ -184,8 +184,8 @@ CREATE TABLE company_address (
 CREATE TABLE job_category (
     category_id VARCHAR(20) PRIMARY KEY,
     category_name VARCHAR(100) NOT NULL,
-    created_at VARCHAR(20) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE jobs (
@@ -202,8 +202,8 @@ CREATE TABLE jobs (
     job_status INT NOT NULL,
     closing_date VARCHAR(20) NOT NULL,
     job_ref CHAR(10) NOT NULL,
-    created_at VARCHAR(20) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (company_id) references company(company_id) on delete cascade,
     foreign key (job_category) references job_category(category_id) on delete set null
 );
@@ -212,21 +212,21 @@ CREATE TABLE job_requirements (
     requirement_id VARCHAR(30) PRIMARY KEY,
     job_id VARCHAR(45) NOT NULL,
     requirement TEXT NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (job_id) references jobs(job_id) on delete cascade
 );
 CREATE TABLE job_duties (
     duties_id VARCHAR(30) PRIMARY KEY,
     job_id VARCHAR(45) NOT NULL,
     duty TEXT NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (job_id) references jobs(job_id) on delete cascade
 );
 CREATE TABLE job_qualifications (
     qualifications_id VARCHAR(30) PRIMARY KEY,
     job_id VARCHAR(45) NOT NULL,
     qualification TEXT NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (job_id) references jobs(job_id) on delete cascade
 );
     /** JOB APPLICATIONS DATABASE **/
@@ -235,8 +235,8 @@ CREATE TABLE job_qualifications (
         job_id VARCHAR(45) NOT NULL,
         user_id VARCHAR(45) NOT NULL,
         application_status INT NOT NULL,
-        created_at VARCHAR(20) NOT NULL,
-        updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        date_created VARCHAR(20) NOT NULL,
+        date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
         foreign key (job_id) references jobs(job_id) on delete cascade
     );
 

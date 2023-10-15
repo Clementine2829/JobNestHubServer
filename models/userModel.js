@@ -1,11 +1,11 @@
-const db = require('../database/database');
+const db = require('../databases/users_database');
 const getCurrentDateAndTime = require('../getCurrentTime')
 
-async function findOneByEmail(email) {
+async function findUserByEmail(email) {
     const [user] = await db.execute('SELECT * FROM users WHERE email = ? LIMIT 1', [email]);
     return user[0];
 }
-async function findOneById(id) {
+async function findUserById(id) {
     const [user] = await db.execute(`SELECT user_id, firstname, lastname, email, profile_status, date_created, date_updated 
                                     FROM users 
                                     WHERE user_id = ?
@@ -23,7 +23,6 @@ async function createUser(user) {
         [user.id, user.firstName, user.lastName, user.email, user.password, currentTime]
     );
 
-    // Check if the user was successfully inserted and return the user data
     if (result.affectedRows === 1) {
         return user;
     } else {
@@ -47,8 +46,8 @@ async function updateUser(updatedUserData) {
 }
 
 module.exports = {
-    findOneByEmail,
-    findOneById,
+    findUserByEmail,
+    findUserById,
     createUser,
     updateUser,
 };

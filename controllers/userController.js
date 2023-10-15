@@ -16,7 +16,7 @@ const createUser = asyncHandler(async (req, res) => {
     throw new Error("All fields are required");
   }
 
-  const userAvailable = await User.findOneByEmail(email);
+  const userAvailable = await User.findUserByEmail(email);
   if(userAvailable){
       res.status(400);
       throw new Error("User already registered");
@@ -53,7 +53,7 @@ const loginUser = asyncHandler(async (req, res) => {
       throw new Error("Invalid user credentials");
   }
 
-  const user = await User.findOneByEmail(email);
+  const user = await User.findUserByEmail(email);
   // compare user password with the hashed password in db
   if(user && (await bcrypt.compare(password, user.password))){
       // when signing the access token, decide what you want to put inside
@@ -65,7 +65,7 @@ const loginUser = asyncHandler(async (req, res) => {
           },
       }, 
       process.env.ACCESS_TOKEN_SECRET, 
-      { expiresIn: "10m"}
+      { expiresIn: "30m"}
       );
       console.log(accessToken)
       res.status(200).json({ accessToken });
@@ -79,12 +79,12 @@ const loginUser = asyncHandler(async (req, res) => {
 //@access private 
 const getUser = asyncHandler(async (req, res) => {
     const userId = req.params.id;
-    const user = await User.findOneById(userId);
+    const user = await User.findUserById(userId);
 
     if (user) {
       res.status(200).json(user);
     }else{
-      res.status(401);
+      res.status(404);
       throw new Error("User not found")
     }
 })
@@ -97,10 +97,10 @@ const updateUser = asyncHandler(async (req, res) => {
   const { firstName, lastName, email } = req.body;
 
   // Check if the user exists before updating
-  const existingUser = await User.findOneById(userId);
+  const existingUser = await User.findUserById(userId);
 
   if (!existingUser) {
-    res.status(401);
+    res.status(404);
     throw new Error("User not found")
   }
   

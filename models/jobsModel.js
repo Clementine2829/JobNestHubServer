@@ -1,4 +1,4 @@
-const db = require('../database/database');
+const db = require('../databases/jobs_databases');
 
 async function getJobById(id) {
     const [user] = await db.execute('SELECT * FROM jobs WHERE id = ?', [id]);

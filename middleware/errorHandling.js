@@ -26,16 +26,18 @@ const errorHandler = (err, req, res, next) => {
         switch (statusCode) {
             case constants.MOVED_PERMANENTLY:
                 res.json({
-                    title: "Moved permanently",
-                    message: err.message,
-                    stackTrace: err.stack
+                    Status: constants.MOVED_PERMANENTLY,
+                    title: "Redirection: Moved permanently",
+                    message: err.message
+                    // stackTrace: err.stack
                 });
                 break;
             case constants.FOUND:
                 res.json({
-                    title: "Moved to new URL temporarily",
-                    message: err.message,
-                    stackTrace: err.stack
+                    Status: constants.FOUND,
+                    title: "Redirection: Moved to new URL temporarily",
+                    message: err.message
+                    // stackTrace: err.stack
                 });
                 break;
             default:
@@ -49,30 +51,34 @@ const errorHandler = (err, req, res, next) => {
         switch (statusCode) {
             case constants.VALIDATION_ERROR:
                 res.json({
-                    title: "Validation failed",
-                    message: err.message,
-                    stackTrace: err.stack
+                    Status: constants.VALIDATION_ERROR,
+                    title: "Error: Validation failed",
+                    message: err.message
+                    // stackTrace: err.stack
                 });
                 break;
             case constants.NOT_FOUND:
                 res.json({
-                    title: "Not found",
-                    message: err.message,
-                    stackTrace: err.stack
+                    Status: constants.NOT_FOUND,
+                    title: "Error: Not found",
+                    message: err.message
+                    // stackTrace: err.stack
                 });
                 break;
             case constants.UNAUTHORIZED:
                 res.json({
-                    title: "Unauthorized",
-                    message: err.message,
-                    stackTrace: err.stack
+                    Status: constants.UNAUTHORIZED,
+                    title: "Error: Unauthorized",
+                    message: err.message
+                    // stackTrace: err.stack
                 });
                 break;
             case constants.FORBIDDEN:
                 res.json({
-                    title: "Forbidden",
-                    message: err.message,
-                    stackTrace: err.stack
+                    Status: constants.FORBIDDEN,
+                    title: "Error: Forbidden",
+                    message: err.message
+                    // stackTrace: err.stack
                 });
                 break;
             default:                    
@@ -86,30 +92,34 @@ const errorHandler = (err, req, res, next) => {
         switch (statusCode) {
             case constants.SERVER_ERROR:
                 res.json({
-                    title: "Internal Server Error",
-                    message: err.message,
-                    stackTrace: err.stack
+                    Status: constants.SERVER_ERROR,
+                    title: "Error: Internal Server Error",
+                    message: err.message
+                    // stackTrace: err.stack
                 });
                 break;
             case constants.BAD_GATEWAY:
                 res.json({
-                    title: "Bad Gateway",
-                    message: err.message,
-                    stackTrace: err.stack
+                    Status: constants.BAD_GATEWAY,
+                    title: "Error: Bad Gateway",
+                    message: err.message
+                    // stackTrace: err.stack
                 });
                 break;
             case constants.SERVICE_UNAVAILABLE:
                 res.json({
-                    title: "Service Unavailable",
-                    message: err.message,
-                    stackTrace: err.stack
+                    Status: constants.SERVICE_UNAVAILABLE,
+                    title: "Error: Service Unavailable",
+                    message: err.message
+                    // stackTrace: err.stack
                 });
                 break;
             case constants.GATEWAY_TIMEOUT:
                 res.json({
-                    title: "Gateway Timeout",
-                    message: err.message,
-                    stackTrace: err.stack
+                    Status: constants.GATEWAY_TIMEOUT,
+                    title: "Error: Gateway Timeout",
+                    message: err.message
+                    // stackTrace: err.stack
                 });
                 break;
             default:

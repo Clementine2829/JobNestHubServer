@@ -158,10 +158,10 @@ CREATE TABLE company (
     company_name VARCHAR(100) NOT NULL,
     company_description TEXT NOT NULL,
     company_email VARCHAR(100) NOT NULL,
-    company_website VARCHAR(100) NOT NULL,
+    company_website VARCHAR(100) NOT NULL DEFAULT 'none',
     company_phone VARCHAR(10) NOT NULL,
-    company_logo VARCHAR(30) NOT NULL,
-    company_status INT NOT NULL,
+    company_logo VARCHAR(30) NOT NULL DEFAULT 'default_company_logo.png',
+    company_status INT NOT NULL DEFAULT '0',
     date_created VARCHAR(20) NOT NULL,
     date_updated TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -199,7 +199,7 @@ CREATE TABLE jobs (
     job_salary VARCHAR(20),
     job_category VARCHAR(20),
     job_location VARCHAR(50) NOT NULL,
-    job_status INT NOT NULL,
+    job_status INT NOT NULL DEFAULT 0,
     closing_date VARCHAR(20) NOT NULL,
     job_ref CHAR(10) NOT NULL,
     date_created VARCHAR(20) NOT NULL,

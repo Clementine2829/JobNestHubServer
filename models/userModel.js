@@ -6,7 +6,7 @@ async function findOneByEmail(email) {
     return user[0];
 }
 async function findOneById(id) {
-    const [user] = await db.execute(`SELECT user_id, firstname, lastname, email, date_mod 
+    const [user] = await db.execute(`SELECT user_id, firstname, lastname, email, profile_status, date_created, date_updated 
                                     FROM users 
                                     WHERE user_id = ?
                                     LIMIT 1`, [id]);
@@ -32,16 +32,17 @@ async function createUser(user) {
 }
 
 async function updateUser(updatedUserData) {
+    const currentTime = await getCurrentDateAndTime();
     const [result] = await db.execute(
-      'UPDATE users SET firstname = ?, lastname = ?, email = ? WHERE user_id = ?',
+      'UPDATE users SET firstname = ?, lastname = ?, email = ?, date_updated = ? WHERE user_id = ?',
       [
         updatedUserData.firstName,
         updatedUserData.lastName,
         updatedUserData.email,
-        updatedUserData.user_id,
+        currentTime,
+        updatedUserData.id,
     ]
     );
-    console.log("results " + result.affectedRows)
     return result.affectedRows;  
 }
 

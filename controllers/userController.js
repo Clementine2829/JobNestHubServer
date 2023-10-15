@@ -53,7 +53,7 @@ const loginUser = asyncHandler(async (req, res) => {
       throw new Error("Invalid user credentials");
   }
 
-  const user = await User.findOne(email);
+  const user = await User.findOneByEmail(email);
   // compare user password with the hashed password in db
   if(user && (await bcrypt.compare(password, user.password))){
       // when signing the access token, decide what you want to put inside

@@ -1,0 +1,245 @@
+CREATE DATABASE jobnesthub_users;
+CREATE DATABASE jobnesthub_jobs;
+
+
+/** START OF USERS DATABASE **/
+CREATE TABLE users (
+    user_id VARCHAR(45) PRIMARY KEY,
+    firstname VARCHAR(30) NOT NULL,
+    lastname VARCHAR(30) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    user_type VARCHAR(20) NOT NULL DEFAULT 'basic',
+    profile_status INT NOT NULL DEFAULT 1,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE phone_number(
+    phone_id VARCHAR(30) PRIMARY KEY,
+    user_id VARCHAR(45) NOT NULL,
+    phone_number VARCHAR(10) NOT NULL,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (user_id) references users(user_id) on delete cascade
+);
+
+CREATE TABLE address(
+    address_id VARCHAR(30) PRIMARY KEY,
+    user_id VARCHAR(45) NOT NULL,
+    street VARCHAR(100) NOT NULL,
+    city VARCHAR(30) NOT NULL,
+    zipcode VARCHAR(100) NOT NULL,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (user_id) references users(user_id) on delete cascade
+);
+
+CREATE TABLE notifications(
+    notification_id VARCHAR(30) PRIMARY KEY,
+    user_id VARCHAR(45) NOT NULL,
+    notification TEXT NOT NULL,
+    status INT NOT NULL,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (user_id) references users(user_id) on delete cascade
+);
+
+CREATE TABLE reset_password(
+    reset_id VARCHAR(30) PRIMARY KEY,
+    user_id VARCHAR(45) NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    date_created TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (user_id) references users(user_id) on delete cascade
+);
+
+CREATE TABLE subscribers(
+    subscriber_id VARCHAR(30) PRIMARY KEY,
+    email VARCHAR(50) NOT NULL,
+    subscriber VARCHAR(45) NOT NULL,
+    date_created TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE verify_users (
+    id VARCHAR (30) PRIMARY KEY,
+    user_id VARCHAR(45) NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (user_id) references users(user_id) on delete cascade
+);
+
+/** END OF USERS DATABASE **/
+
+/** START OF USER RESUME DATABASE **/
+
+CREATE TABLE resume_extended_info(
+    extended_info_id VARCHAR(30) PRIMARY KEY,
+    user_id VARCHAR(45) NOT NULL,
+    gender int NOT NUll,
+    nationality VARCHAR (50) NOT NUll,
+    race VARCHAR (50) NOT NUll,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (user_id) references users(user_id) on delete cascade
+);
+
+CREATE TABLE resume_about_myself(
+    about_myself_id VARCHAR(30) PRIMARY KEY,
+    about_myself TEXT NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE resume_field_of_experties(
+    experties_id VARCHAR(30) PRIMARY KEY,
+    experties VARCHAR(100) NOT NULL,
+    user_id VARCHAR(45) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (user_id) references users(user_id) on delete cascade
+);
+
+CREATE TABLE resume_skills(
+    skills_id VARCHAR(30) PRIMARY KEY,
+    skills VARCHAR(100) NOT NULL,
+    user_id VARCHAR(45) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (user_id) references users(user_id) on delete cascade
+);
+
+CREATE TABLE resume_references(
+    references_id VARCHAR(30) PRIMARY KEY,
+    ref_name VARCHAR(100) NOT NULL,
+    ref_email VARCHAR(100) NOT NULL,
+    ref_phone VARCHAR(10) NOT NULL,
+    ref_organization VARCHAR(100) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE resume_high_school(
+    education_id VARCHAR(30) PRIMARY KEY,
+    user_id VARCHAR(45) NOT NULL,
+    school_name VARCHAR(100) NOT NULL,
+    school_location VARCHAR(150) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (user_id) references users(user_id) on delete cascade
+);
+
+CREATE TABLE resume_education(
+    education_id VARCHAR(30) PRIMARY KEY,
+    user_id VARCHAR(45) NOT NULL,
+    school_name VARCHAR(100) NOT NULL,
+    degree VARCHAR(100) NOT NULL,
+    field_of_study VARCHAR(100) NOT NULL,
+    start_date VARCHAR(20) NOT NULL,
+    end_date VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (user_id) references users(user_id) on delete cascade
+);
+
+CREATE TABLE resume_experience(
+    experience_id VARCHAR(30) PRIMARY KEY,
+    user_id VARCHAR(45) NOT NULL,
+    job_title VARCHAR(100) NOT NULL,
+    company_name VARCHAR(100) NOT NULL,
+    start_date VARCHAR(20) NOT NULL,
+    end_date VARCHAR(20) NOT NULL,
+    job_description TEXT NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (user_id) references users(user_id) on delete cascade
+);
+
+
+
+/** END OF USER RESUME DATABASE **/
+
+/** START OF COMPANIES DATABASE **/
+
+CREATE TABLE company (
+    company_id VARCHAR(45) PRIMARY KEY,
+    company_name VARCHAR(100) NOT NULL,
+    company_description TEXT NOT NULL,
+    company_email VARCHAR(100) NOT NULL,
+    company_website VARCHAR(100) NOT NULL,
+    company_phone VARCHAR(10) NOT NULL,
+    company_logo VARCHAR(30) NOT NULL,
+    company_status INT NOT NULL,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE company_address (
+    address_id VARCHAR(30) PRIMARY KEY,
+    company_id VARCHAR(45) NOT NULL,
+    street VARCHAR(100) NOT NULL,
+    city VARCHAR(30) NOT NULL,
+    zipcode VARCHAR(100) NOT NULL,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (company_id) references company(company_id) on delete cascade
+);
+
+/** END OF COMPANIES DATABASE **/
+
+/** START OF JOBS DATABASE **/
+
+CREATE TABLE job_category (
+    category_id VARCHAR(20) PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE jobs (
+    job_id VARCHAR(45) PRIMARY KEY,
+    company_id VARCHAR(45) NOT NULL,
+    job_title VARCHAR(100) NOT NULL,
+    job_description TEXT NOT NULL,
+    remote_work INT NOT NULL DEFAULT 0,
+    job_type INT NOT NULL DEFAULT 0,
+    work_type INT NOT NULL DEFAULT 0,
+    job_salary VARCHAR(20),
+    job_category VARCHAR(20),
+    job_location VARCHAR(50) NOT NULL,
+    job_status INT NOT NULL,
+    closing_date VARCHAR(20) NOT NULL,
+    job_ref CHAR(10) NOT NULL,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (company_id) references company(company_id) on delete cascade,
+    foreign key (job_category) references job_category(category_id) on delete set null
+);
+
+CREATE TABLE job_requirements (
+    requirement_id VARCHAR(30) PRIMARY KEY,
+    job_id VARCHAR(45) NOT NULL,
+    requirement TEXT NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (job_id) references jobs(job_id) on delete cascade
+);
+CREATE TABLE job_duties (
+    duties_id VARCHAR(30) PRIMARY KEY,
+    job_id VARCHAR(45) NOT NULL,
+    duty TEXT NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (job_id) references jobs(job_id) on delete cascade
+);
+CREATE TABLE job_qualifications (
+    qualifications_id VARCHAR(30) PRIMARY KEY,
+    job_id VARCHAR(45) NOT NULL,
+    qualification TEXT NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (job_id) references jobs(job_id) on delete cascade
+);
+    /** JOB APPLICATIONS DATABASE **/
+    CREATE TABLE job_applications (
+        application_id VARCHAR(30) PRIMARY KEY,
+        job_id VARCHAR(45) NOT NULL,
+        user_id VARCHAR(45) NOT NULL,
+        application_status INT NOT NULL,
+        date_created VARCHAR(20) NOT NULL,
+        date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+        foreign key (job_id) references jobs(job_id) on delete cascade
+    );
+
+    /** END OF JOB APPLICATIONS DATABASE **/
+
+/** END OF JOBS DATABASE **/

@@ -5,7 +5,7 @@ const crypto = require('crypto');
 
 
 //@desc Create a new company
-//@route POST api/companies/create
+//@route POST api/companies
 //@access private 
 const createCompany = asyncHandler(async (req, res) => {
     const { name, description, email, website, phone, logo } = req.body;
@@ -14,8 +14,8 @@ const createCompany = asyncHandler(async (req, res) => {
         throw new Error("All fields are required");
     }
 
-      const companyAvailable = await Company.findCompanyByNameOrContactDetails({name, email, phone});
-      if(companyAvailable){
+      const companyExist = await Company.findCompanyByNameOrContactDetails({name, email, phone});
+      if(companyExist){
           res.status(400);
           throw new Error("Company already registered");
       }
@@ -45,15 +45,15 @@ const createCompany = asyncHandler(async (req, res) => {
 //@route GET api/companies/:id
 //@access private 
 const getCompany = asyncHandler(async (req, res) => {
-const companyId = req.params.id;
-const company = await Company.findCompanyById(companyId);
+    const companyId = req.params.id;
+    const company = await Company.findCompanyById(companyId);
 
-if (company) {
-    res.status(200).json(company);
-}else{
-    res.status(404);
-    throw new Error("Company not found")
-}
+    if (company) {
+        res.status(200).json(company);
+    }else{
+        res.status(404);
+        throw new Error("Company not found")
+    }
 })
 
 //@desc Update company

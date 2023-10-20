@@ -10,9 +10,9 @@ const validateToken = require("../middleware/vallidateTokenHandler");
 
 const router = express.Router();
 
-router.get('/users/:id', validateToken, getUser);
-router.post('/users/login', loginUser);
-router.post('/users', createUser);
-router.put('/users/:id', validateToken, updateUser); 
+router.get('/:id', validateToken, getUser);
+router.post('/login', loginUser);
+router.post('/', createUser);
+router.put('/:id', validateToken, updateUser); 
 
 module.exports = router;

@@ -9,8 +9,8 @@ const validateToken = require("../middleware/vallidateTokenHandler");
 
 const router = express.Router();
 
-router.get('/companies/:id', validateToken, getCompany);
-router.post('/companies', validateToken, createCompany);
-router.put('/companies/:id', validateToken, updateCompany); 
+router.get('/:id', validateToken, getCompany);
+router.post('/', validateToken, createCompany);
+router.put('/:id', validateToken, updateCompany); 
 
 module.exports = router;

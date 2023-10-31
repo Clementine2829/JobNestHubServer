@@ -64,7 +64,7 @@ const getJobs = asyncHandler(async (req, res) => {
 //@access public 
 const getJobById = asyncHandler(async (req, res) => {
     const jobId = req.params.id;
-    const job = await Job.findJobById({jobId});
+    const job = await Job.findJobById(jobId);
 
     if (job) {
         res.status(200).json(job);

@@ -1,8 +1,10 @@
 const { constants } = require("./constants");
+const logger = require("../logger");
 
 const errorHandler = (err, req, res, next) => {
     const statusCode = res.statusCode ? res.statusCode : constants.SERVER_ERROR;
     next(err);
+    logger.error(`[${req.method}] ${req.url} ${statusCode} ${err.message}`);
 
     // Informational (1xx) Status Codes
     if (statusCode >= 100 && statusCode < 200) {

@@ -27,6 +27,7 @@ const createJob = asyncHandler(async (req, res) => {
         job_id:jobId,
         company_id:companyId, 
         job_title:jobTitle, 
+        job_description:jobDescription,
         remote_work:remoteWork, 
         job_type:jobType, 
         // work_type:workType, 
@@ -66,6 +67,20 @@ const getJobById = asyncHandler(async (req, res) => {
     const jobId = req.params.id;
     const job = await Job.findJobById(jobId);
 
+    if (job) {
+        res.status(200).json(job);
+    }else{
+        res.status(404);
+        throw new Error("Job not found")
+    }
+})
+
+//@desc Get job profile
+//@route GET api/jobs/:id
+//@access public 
+const getJobByIdAdmin = asyncHandler(async (req, res) => {
+    const jobId = req.params.id;
+    const job = await Job.findJobById(jobId);
     if (job) {
         res.status(200).json(job);
     }else{
@@ -115,6 +130,7 @@ const updateJob = asyncHandler(async (req, res) => {
 
 module.exports = {
     createJob,
+    getJobByIdAdmin,
     getJobById,
     getJobs,
     updateJob

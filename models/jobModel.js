@@ -3,12 +3,13 @@ const getCurrentDateAndTime = require('../getCurrentTime')
 
 async function findJobById(id) {
     const [job] = await db.execute(`
-                SELECT jobs.job_id, jobs.job_title, jobs.remote_work, jobs.job_type,
+                SELECT jobs.job_id, jobs.job_title, jobs.job_description, jobs.remote_work, jobs.job_type,
                     jobs.job_salary, jobs.job_location, jobs.job_status, 
                     jobs.closing_date, jobs.date_created, jobs.date_updated, jobs.job_ref,
                     JSON_OBJECT(
                         'company_id', company.company_id, 
                         'company_name', company.company_name,
+                        'company_description', company.company_description,
                         'company_logo', company.company_logo
                     ) AS company, 
                         JSON_OBJECT(
@@ -26,12 +27,13 @@ async function findJobById(id) {
 
 async function getJobs() {
     const [jobs] = await db.execute(`
-                SELECT jobs.job_id, jobs.job_title, jobs.remote_work, jobs.job_type,
+                SELECT jobs.job_id, jobs.job_title, jobs.job_description, jobs.remote_work, jobs.job_type,
                 jobs.job_salary, jobs.job_location, jobs.job_status, 
                 jobs.closing_date, jobs.date_created, jobs.date_updated, jobs.job_ref,
                 JSON_OBJECT(
                     'company_id', company.company_id, 
                     'company_name', company.company_name,
+                    'company_description', company.company_description,
                     'company_logo', company.company_logo
                 ) AS company, 
                     JSON_OBJECT(
@@ -59,15 +61,16 @@ function structuredJob(job) {
         };
 
         const jobTypeMap = {
-            0: 'Fulltime',
-            1: 'Parttime',
+            0: 'Full time',
+            1: 'Part time',
             2: 'Contract'
         };
 
         const transformedJob = {
             ...job,
             remote_work: remoteWorkMap[job.remote_work],
-            job_type: jobTypeMap[job.job_type]
+            job_type: jobTypeMap[job.job_type],
+            likes:5
         };
         delete transformedJob.job_status;
         delete transformedJob.date_created;
@@ -82,6 +85,7 @@ async function createJob(job) {
         job_id,
         company_id,
         job_title, 
+        job_description,
         remote_work, 
         job_type, 
         work_type, 
@@ -110,14 +114,15 @@ async function createJob(job) {
     const currentTime = await getCurrentDateAndTime();
     
     const [result] = await db.execute(
-        `INSERT INTO jobs (job_id, company_id, job_title, remote_work, job_type, 
+        `INSERT INTO jobs (job_id, company_id, job_title, job_description, remote_work, job_type, 
             job_salary, job_category, job_location, 
             closing_date, job_ref, date_created) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           job_id,
           company_id, 
-          job_title, 
+          job_title,
+          job_description, 
           remote_work, 
           job_type, 
           job_salary, 

@@ -239,17 +239,18 @@ CREATE TABLE job_qualifications (
     date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (job_id) references jobs(job_id) on delete cascade
 );
-    /** JOB APPLICATIONS DATABASE **/
-    CREATE TABLE job_applications (
-        application_id VARCHAR(30) PRIMARY KEY,
-        job_id VARCHAR(45) NOT NULL,
-        user_id VARCHAR(45) NOT NULL,
-        application_status INT NOT NULL,
-        date_created VARCHAR(20) NOT NULL,
-        date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
-        foreign key (job_id) references jobs(job_id) on delete cascade
-    );
 
-    /** END OF JOB APPLICATIONS DATABASE **/
+/** JOB APPLICATIONS DATABASE **/
+CREATE TABLE job_applications (
+    job_id VARCHAR(45) NOT NULL,
+    user_id VARCHAR(45) NOT NULL,
+    application_status INT NOT NULL DEFAULT 0,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    primary key (job_id, user_id),
+    foreign key (job_id) references jobs(job_id) on delete cascade
+);
+
+/** END OF JOB APPLICATIONS DATABASE **/
 
 /** END OF JOBS DATABASE **/

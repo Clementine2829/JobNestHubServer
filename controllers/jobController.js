@@ -106,7 +106,7 @@ const getJobByIdAdmin = asyncHandler(async (req, res) => {
 //@desc Get job applications by user,
 // if action is jobs, get all jobs' applications by all users
 // else if action is admin, get all job applications by all users
-//@route GET api/jobs/applications/:userId?action=(jobs|admin)
+//@route GET api/jobs/applications/:id?action=(jobs|admin)
 //@access private
 const getJobApplications = asyncHandler(async (req, res) => {
   console.log(req);
@@ -119,6 +119,29 @@ const getJobApplications = asyncHandler(async (req, res) => {
   } else {
     res.status(404);
     throw new Error("Not found");
+  }
+});
+
+//@desc Apply for a job
+//@route POST api/jobs/applications/:jobId?action=apply
+//@access private
+const applyForJob = asyncHandler(async (req, res) => {
+  const jobId = req.params.jobId;
+  const userId = req.user.id;
+  if (Job.getJobApplication(userId, jobId)) {
+    res.status(400);
+    throw new Error("You have already applied for this job");
+  }
+  const jobApplication = await Job.applyForJob({
+    user_id: userId,
+    job_id: jobId,
+  });
+
+  if (jobApplication) {
+    res.status(200).json(jobApplication);
+  } else {
+    res.status(401);
+    throw new Error("Job application failed.");
   }
 });
 
@@ -179,6 +202,7 @@ module.exports = {
   getJobById,
   getJobApplications,
   getJobApplication,
+  applyForJob,
   getJobs,
   updateJob,
 };

@@ -204,6 +204,19 @@ async function getJobApplication(userId, jobId) {
   return applications;
 }
 
+async function applyForJob({ user_id, job_id }) {
+  const currentTime = await getCurrentDateAndTime();
+  const [result] = await db.execute(
+    `INSERT INTO job_applications (user_id, job_id, date_created) VALUES (?, ?, ?)`,
+    [user_id, job_id, currentTime]
+  );
+  if (result.affectedRows === 1) {
+    return getJobApplication(user_id, job_id);
+  } else {
+    throw new Error("Job application failed.");
+  }
+}
+
 async function updateJob(updatedJobData) {
   // const {
   //     job_id,
@@ -309,5 +322,6 @@ module.exports = {
   getJobApplications,
   getJobApplication,
   createJob,
+  applyForJob,
   updateJob,
 };

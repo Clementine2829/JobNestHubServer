@@ -8,6 +8,7 @@ const {
   updateJob,
   getJobApplications,
   getJobApplication,
+  applyForJob,
 } = require("../controllers/jobController");
 const validateToken = require("../middleware/vallidateTokenHandler");
 
@@ -19,6 +20,7 @@ router.get("/admin/:id", validateToken, getJobByIdAdmin);
 router.get("/:id", getJobById);
 router.get("/applications/:id", validateToken, getJobApplications);
 router.get("/applications/:userId/:jobId", validateToken, getJobApplication);
+router.post("/applications/:jobId", validateToken, applyForJob);
 router.post("/", validateToken, createJob);
 router.put("/:id", validateToken, updateJob);
 

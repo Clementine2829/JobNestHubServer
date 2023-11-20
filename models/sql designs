@@ -158,10 +158,10 @@ CREATE TABLE company (
     company_name VARCHAR(100) NOT NULL,
     company_description TEXT NOT NULL,
     company_email VARCHAR(100) NOT NULL,
-    company_website VARCHAR(100) NOT NULL,
+    company_website VARCHAR(100) NOT NULL DEFAULT 'none',
     company_phone VARCHAR(10) NOT NULL,
-    company_logo VARCHAR(30) NOT NULL,
-    company_status INT NOT NULL,
+    company_logo VARCHAR(30) NOT NULL DEFAULT 'default_company_logo.png',
+    company_status INT NOT NULL DEFAULT '0',
     date_created VARCHAR(20) NOT NULL,
     date_updated TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -181,12 +181,22 @@ CREATE TABLE company_address (
 
 /** START OF JOBS DATABASE **/
 
-CREATE TABLE job_category (
-    category_id VARCHAR(20) PRIMARY KEY,
+CREATE TABLE job_category_groups (
+    group_id INT AUTO_INCREMENT PRIMARY KEY,
     category_name VARCHAR(100) NOT NULL,
     date_created VARCHAR(20) NOT NULL,
     date_updated TIMESTAMP NOT NULL DEFAULT NOW()
+)
+
+CREATE TABLE job_category (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL,
+    group_id INT NOT NULL,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    foreign key (group_id) references job_category_groups(group_id) on delete cascade
 );
+
 
 CREATE TABLE jobs (
     job_id VARCHAR(45) PRIMARY KEY,
@@ -194,12 +204,12 @@ CREATE TABLE jobs (
     job_title VARCHAR(100) NOT NULL,
     job_description TEXT NOT NULL,
     remote_work INT NOT NULL DEFAULT 0,
-    job_type INT NOT NULL DEFAULT 0,
-    work_type INT NOT NULL DEFAULT 0,
+    job_type INT NOT NULL DEFAULT 1,
+    work_type INT NOT NULL DEFAULT 1,
     job_salary VARCHAR(20),
-    job_category VARCHAR(20),
+    job_category INT,
     job_location VARCHAR(50) NOT NULL,
-    job_status INT NOT NULL,
+    job_status INT NOT NULL DEFAULT 1,
     closing_date VARCHAR(20) NOT NULL,
     job_ref CHAR(10) NOT NULL,
     date_created VARCHAR(20) NOT NULL,
@@ -229,17 +239,18 @@ CREATE TABLE job_qualifications (
     date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
     foreign key (job_id) references jobs(job_id) on delete cascade
 );
-    /** JOB APPLICATIONS DATABASE **/
-    CREATE TABLE job_applications (
-        application_id VARCHAR(30) PRIMARY KEY,
-        job_id VARCHAR(45) NOT NULL,
-        user_id VARCHAR(45) NOT NULL,
-        application_status INT NOT NULL,
-        date_created VARCHAR(20) NOT NULL,
-        date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
-        foreign key (job_id) references jobs(job_id) on delete cascade
-    );
 
-    /** END OF JOB APPLICATIONS DATABASE **/
+/** JOB APPLICATIONS DATABASE **/
+CREATE TABLE job_applications (
+    job_id VARCHAR(45) NOT NULL,
+    user_id VARCHAR(45) NOT NULL,
+    application_status INT NOT NULL DEFAULT 0,
+    date_created VARCHAR(20) NOT NULL,
+    date_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    primary key (job_id, user_id),
+    foreign key (job_id) references jobs(job_id) on delete cascade
+);
+
+/** END OF JOB APPLICATIONS DATABASE **/
 
 /** END OF JOBS DATABASE **/

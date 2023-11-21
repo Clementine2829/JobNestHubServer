@@ -28,26 +28,78 @@ async function findJobById(id) {
   return structuredJob(job[0]);
 }
 
-async function getJobs() {
-  const [jobs] = await db.execute(`
-                SELECT jobs.job_id, jobs.job_title, jobs.job_description, jobs.remote_work, jobs.job_type,
-                jobs.job_salary, jobs.job_location, jobs.job_status, 
-                jobs.closing_date, jobs.date_created, jobs.date_updated, jobs.job_ref,
-                JSON_OBJECT(
-                    'company_id', company.company_id, 
-                    'company_name', company.company_name,
-                    'company_description', company.company_description,
-                    'company_logo', company.company_logo
-                ) AS company, 
-                    JSON_OBJECT(
-                        'category_id', job_category.category_id, 
-                        'category_name', job_category.category_name
-                    
-                ) AS category
-                FROM jobs
-                    INNER JOIN company ON jobs.company_id = company.company_id
-                    INNER JOIN job_category ON jobs.job_category  = job_category.category_id`);
-  // return jobs;
+async function findJobByCompany(companyId) {
+  const [jobs] = await db.execute(
+    `SELECT jobs.job_id, jobs.job_title, jobs.job_description, jobs.remote_work, jobs.job_type,
+                        jobs.job_salary, jobs.job_location, jobs.job_status, 
+                        jobs.closing_date, jobs.date_created, jobs.date_updated, jobs.job_ref,
+                        JSON_OBJECT(
+                            'company_id', company.company_id, 
+                            'company_name', company.company_name,
+                            'company_description', company.company_description,
+                            'company_logo', company.company_logo
+                        ) AS company, 
+                            JSON_OBJECT(
+                                'category_id', job_category.category_id, 
+                                'category_name', job_category.category_name
+                            
+                        ) AS category
+                    FROM jobs
+                        INNER JOIN company ON jobs.company_id = company.company_id 
+                        INNER JOIN job_category ON jobs.job_category  = job_category.category_id
+                    WHERE jobs.company_id = ? 
+                    LIMIT 10`,
+    [companyId]
+  );
+  return structuredJob(jobs[0]);
+}
+
+// url ?action=(home|jobs|search|company|category|location)+&page=1&limit=10
+async function getJobs(action = "", q = "", page = 1) {
+  const limit = 5;
+  console.log("action " + action);
+  console.log("query " + q);
+  if (!action.match("/(home|jobs|company|category|location)/")) action = "";
+  if (q !== "") {
+    q = ` AND (jobs.job_title LIKE '%${q}%' 
+                OR jobs.job_description LIKE '%${q}%' 
+                OR jobs.job_ref LIKE '%${q}%' 
+                OR company.company_name LIKE '%${q}%'
+                OR company.company_description LIKE '%${q}%'
+                OR job_category.category_name LIKE '%${q}%'
+                OR jobs.job_description LIKE '%${q}%')`;
+  }
+
+  if (action === "home") action = ``;
+  else if (action === "jobs") action = ``;
+  else if (action === "company") action = ``;
+  else if (action === "category") action = ``;
+  else if (action === "location") action = ``;
+
+  let sql = ` SELECT jobs.job_id, jobs.job_title, jobs.job_description, jobs.remote_work, jobs.job_type,
+    jobs.job_salary, jobs.job_location, jobs.job_status, 
+    jobs.closing_date, jobs.date_created, jobs.date_updated, jobs.job_ref,
+    JSON_OBJECT(
+        'company_id', company.company_id, 
+        'company_name', company.company_name,
+        'company_description', company.company_description,
+        'company_logo', company.company_logo
+    ) AS company, 
+        JSON_OBJECT(
+            'category_id', job_category.category_id, 
+            'category_name', job_category.category_name
+        
+    ) AS category
+    FROM jobs
+        INNER JOIN company ON jobs.company_id = company.company_id
+        INNER JOIN job_category ON jobs.job_category  = job_category.category_id
+    WHERE jobs.job_status = 1 ${q} ${action}
+    ORDER BY jobs.date_created DESC
+    LIMIT ${limit} 
+    OFFSET ${page * limit - limit}`;
+
+  console.log(sql);
+  const [jobs] = await db.execute(sql);
   if (jobs.length > 0) {
     const structuredJobs = jobs.map((job) => structuredJob(job));
     return structuredJobs;
@@ -177,6 +229,7 @@ async function getJobApplications(id, action) {
     return structuredJobApplications(applications);
   }
 }
+
 function structuredJobApplications(jobs) {
   if (jobs && Array.isArray(jobs)) {
     const jobStatus = {
@@ -324,4 +377,5 @@ module.exports = {
   createJob,
   applyForJob,
   updateJob,
+  findJobByCompany,
 };

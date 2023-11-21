@@ -61,11 +61,17 @@ const createJob = asyncHandler(async (req, res) => {
   }
 });
 
-//@desc Get job
-//@route GET api/jobs/?action=(home|jobs|search|category|location)+&page=1&limit=10
+//@desc Get jobs, if action is included and q is empty, get all jobs,
+//  else if action is jobs, get all jobs, else if action is company,
+//  get all jobs by company, else if action is category, get all jobs
+//  by category, else if action is location, get all jobs by location
+//@route GET api/jobs/?action=(home|jobs|company|category|location)/q=(search|company|category|location)+&page=1&limit=10
 //@access public
 const getJobs = asyncHandler(async (req, res) => {
-  const jobs = await Job.getJobs();
+  const action = req.query.action;
+  const page = req.query.page;
+  const q = req.query.q;
+  const jobs = await Job.getJobs(action, q, page);
   if (jobs) {
     res.status(200).json(jobs);
   } else {

@@ -56,10 +56,12 @@ async function findJobByCompany(companyId) {
 
 // url ?action=(home|jobs|search|company|category|location)+&page=1&limit=10
 async function getJobs(action = "", q = "", page = 1) {
-  const limit = 5;
-  console.log("action " + action);
-  console.log("query " + q);
-  if (!action.match("/(home|jobs|company|category|location)/")) action = "";
+  let limit = 5;
+  if (!/(home|jobs|company|category|location)/.test(action)) action = "";
+  if (action === "home") limit = 6;
+  // console.log("action " + action);
+  // console.log("query " + q);
+  // console.log("limit  " + limit);
   if (q !== "") {
     q = ` AND (jobs.job_title LIKE '%${q}%' 
                 OR jobs.job_description LIKE '%${q}%' 
@@ -108,6 +110,28 @@ async function getJobs(action = "", q = "", page = 1) {
   }
 }
 
+function getJobRequirements(jobId) {
+  const requirements = [
+    "Bachelor's degree in Computer Science or related field",
+    "Experience with HTML, CSS and JavaScript",
+    "Experience with React, Angular, Vue or Ember",
+  ];
+  return requirements;
+}
+function getJobQualifications(jobId) {
+  const qualifications = ["BSc/BEng Computer Science or related field"];
+  return qualifications;
+}
+function getJobDuties(jobId) {
+  const duties = [
+    "Developing front end website architecture.",
+    "Designing user interactions on web pages.",
+    "Developing back end website applications.",
+    "Creating servers and databases for functionality.",
+  ];
+  return duties;
+}
+
 function structuredJob(job) {
   if (job) {
     const remoteWorkMap = {
@@ -125,6 +149,9 @@ function structuredJob(job) {
       ...job,
       remote_work: remoteWorkMap[job.remote_work],
       job_type: jobTypeMap[job.job_type],
+      job_requirements: getJobRequirements(job.job_id),
+      job_qualifications: getJobQualifications(job.job_id),
+      job_duties: getJobDuties(job.job_id),
       likes: 5,
     };
     delete transformedJob.job_status;

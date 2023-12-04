@@ -99,8 +99,6 @@ async function getJobs(action = "", q = "", page = 1) {
     ORDER BY jobs.date_created DESC
     LIMIT ${limit} 
     OFFSET ${page * limit - limit}`;
-
-  console.log(sql);
   const [jobs] = await db.execute(sql);
   if (jobs.length > 0) {
     const structuredJobs = jobs.map((job) => structuredJob(job));
@@ -110,29 +108,24 @@ async function getJobs(action = "", q = "", page = 1) {
   }
 }
 
-function getJobRequirements(jobId) {
-  const requirements = [
-    "Bachelor's degree in Computer Science or related field",
-    "Experience with HTML, CSS and JavaScript",
-    "Experience with React, Angular, Vue or Ember",
-  ];
+const jobsPropsLimit = 5;
+async function getJobRequirements(job) {
+  const sql = `SELECT requirement FROM job_requirements WHERE job_id = ? LIMIT ${jobsPropsLimit}`;
+  const [requirements] = await db.execute(sql, [job]);
   return requirements;
 }
-function getJobQualifications(jobId) {
-  const qualifications = ["BSc/BEng Computer Science or related field"];
+async function getJobQualifications(job) {
+  const sql = `SELECT qualification FROM job_qualifications WHERE job_id = ? LIMIT ${jobsPropsLimit}`;
+  const [qualifications] = await db.execute(sql, [job]);
   return qualifications;
 }
-function getJobDuties(jobId) {
-  const duties = [
-    "Developing front end website architecture.",
-    "Designing user interactions on web pages.",
-    "Developing back end website applications.",
-    "Creating servers and databases for functionality.",
-  ];
+async function getJobDuties(job) {
+  const sql = `SELECT duty FROM job_duties WHERE job_id = ? LIMIT ${jobsPropsLimit}`;
+  const [duties] = await db.execute(sql, [job]);
   return duties;
 }
 
-function structuredJob(job) {
+async function structuredJob(job) {
   if (job) {
     const remoteWorkMap = {
       0: false,
@@ -145,13 +138,21 @@ function structuredJob(job) {
       2: "Contract",
     };
 
+    const jobRequrements = await getJobRequirements(job.job_id);
+    const jobQualifications = await getJobQualifications(job.job_id);
+    const jobDuties = await getJobDuties(job.job_id);
+
+    console.log(jobRequrements);
+    console.log(jobQualifications);
+    console.log(jobDuties);
+
     const transformedJob = {
       ...job,
       remote_work: remoteWorkMap[job.remote_work],
       job_type: jobTypeMap[job.job_type],
-      job_requirements: getJobRequirements(job.job_id),
-      job_qualifications: getJobQualifications(job.job_id),
-      job_duties: getJobDuties(job.job_id),
+      job_requirements: jobRequrements,
+      job_qualifications: jobQualifications,
+      job_duties: jobDuties,
       likes: 5,
     };
     delete transformedJob.job_status;

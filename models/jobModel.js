@@ -101,7 +101,9 @@ async function getJobs(action = "", q = "", page = 1) {
     OFFSET ${page * limit - limit}`;
   const [jobs] = await db.execute(sql);
   if (jobs.length > 0) {
-    const structuredJobs = jobs.map((job) => structuredJob(job));
+    const structuredJobs = await Promise.all(
+      jobs.map((job) => structuredJob(job, limit))
+    );
     return structuredJobs;
   } else {
     return [];
@@ -112,20 +114,20 @@ const jobsPropsLimit = 5;
 async function getJobRequirements(job) {
   const sql = `SELECT requirement FROM job_requirements WHERE job_id = ? LIMIT ${jobsPropsLimit}`;
   const [requirements] = await db.execute(sql, [job]);
-  return requirements;
+  return requirements.length != 0 ? requirements : [{ requirement: "" }];
 }
 async function getJobQualifications(job) {
   const sql = `SELECT qualification FROM job_qualifications WHERE job_id = ? LIMIT ${jobsPropsLimit}`;
   const [qualifications] = await db.execute(sql, [job]);
-  return qualifications;
+  return qualifications != 0 ? qualifications : [{ qualification: "" }];
 }
 async function getJobDuties(job) {
   const sql = `SELECT duty FROM job_duties WHERE job_id = ? LIMIT ${jobsPropsLimit}`;
   const [duties] = await db.execute(sql, [job]);
-  return duties;
+  return duties != 0 ? duties : [{ duty: "" }];
 }
 
-async function structuredJob(job) {
+async function structuredJob(job, limit = 5) {
   if (job) {
     const remoteWorkMap = {
       0: false,
@@ -138,13 +140,11 @@ async function structuredJob(job) {
       2: "Contract",
     };
 
-    const jobRequrements = await getJobRequirements(job.job_id);
-    const jobQualifications = await getJobQualifications(job.job_id);
-    const jobDuties = await getJobDuties(job.job_id);
-
-    console.log(jobRequrements);
-    console.log(jobQualifications);
-    console.log(jobDuties);
+    const jobRequrements =
+      limit === 6 ? {} : await getJobRequirements(job.job_id);
+    const jobQualifications =
+      limit === 6 ? {} : await getJobQualifications(job.job_id);
+    const jobDuties = limit === 6 ? {} : await getJobDuties(job.job_id);
 
     const transformedJob = {
       ...job,

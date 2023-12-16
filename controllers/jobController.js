@@ -80,6 +80,34 @@ const getJobs = asyncHandler(async (req, res) => {
   }
 });
 
+//@desc Get related jobs
+//@route GET api/jobs/related/:category
+//@access public
+const getRelatedJobs = asyncHandler(async (req, res) => {
+  const category = req.params.category;
+  const jobs = await Job.getRelatedJobs(category);
+  if (jobs) {
+    res.status(200).json(jobs);
+  } else {
+    res.status(404);
+    throw new Error("Jobs not found");
+  }
+});
+
+//@desc Get jobs from "this" company
+//@route GET api/jobs/company/:id
+//@access public
+const getJobsByCompany = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+  const jobs = await Job.getJobsByCompany(id);
+  if (jobs) {
+    res.status(200).json(jobs);
+  } else {
+    res.status(404);
+    throw new Error("Jobs not found");
+  }
+});
+
 //@desc Get job profile
 //@route GET api/jobs/:id
 //@access public
@@ -205,6 +233,8 @@ const updateJob = asyncHandler(async (req, res) => {
 module.exports = {
   createJob,
   getJobByIdAdmin,
+  getRelatedJobs,
+  getJobsByCompany,
   getJobById,
   getJobApplications,
   getJobApplication,

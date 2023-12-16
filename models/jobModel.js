@@ -110,6 +110,23 @@ async function getJobs(action = "", q = "", page = 1) {
   }
 }
 
+async function getRelatedJobs(jobCategoryId) {
+  const sql = `SELECT job_id, job_title 
+   FROM jobs 
+   WHERE job_category = ? 
+   LIMIT 5`;
+  const [jobs] = await db.execute(sql, [jobCategoryId]);
+  return jobs;
+}
+async function getJobsByCompany(companyId) {
+  const sql = `SELECT job_id, job_title 
+   FROM jobs 
+   WHERE company_id = ? 
+   LIMIT 5`;
+  const [jobs] = await db.execute(sql, [companyId]);
+  return jobs;
+}
+
 const jobsPropsLimit = 5;
 async function getJobRequirements(job) {
   const sql = `SELECT requirement FROM job_requirements WHERE job_id = ? LIMIT ${jobsPropsLimit}`;
@@ -400,6 +417,8 @@ async function updateJob(updatedJobData) {
 module.exports = {
   findJobById,
   getJobs,
+  getRelatedJobs,
+  getJobsByCompany,
   getJobApplications,
   getJobApplication,
   createJob,

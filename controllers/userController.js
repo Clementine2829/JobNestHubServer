@@ -68,18 +68,107 @@ const loginUser = asyncHandler(async (req, res) => {
           userType: user.user_type,
           email: user.email,
           firstName: user.firstname,
+          creationData: "",
+          expiresIn: "",
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "60m" }
+      { expiresIn: "1m" }
     );
-    console.log(accessToken);
-    res.status(200).json({ accessToken });
+    const refreshToken = jwt.sign(
+      {
+        user: {
+          id: user.user_id,
+          email: user.email,
+        },
+      },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    console.log(user);
+    // res.cookie("refreshToken", refreshToken, {
+    //   httpOnly: true,
+    //   secure: true,
+    //   sameSite: "None",
+    // });
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    });
+    // res.status(200).json({ refreshToken });
+    // const userRole = {
+    //   0: "basic",
+    //   1: "manager",
+    //   2: "admin",
+    // };
+
+    res.status(200).json({
+      refreshToken: refreshToken,
+      success: true,
+      userRole: user.user_type,
+      userId: user.user_id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+    });
   } else {
     res.status(401);
     throw new Error("Invalid user credentials");
   }
 });
+
+//@desc Login refresh token
+//@route POST api/users/refresh-token
+//@access private??
+const refreshTokenUser = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    res.status(401);
+    throw new Error("Refresh token not found");
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+    const user = await User.findUserById(decoded.userId);
+    if (user) {
+      const accessToken = jwt.sign(
+        {
+          user: {
+            id: user.user_id,
+            userType: user.user_type,
+            email: user.email,
+            firstName: user.firstname,
+            creationData: "",
+            expiresIn: "",
+          },
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "1m" }
+      );
+      // Send the new access token as an HTTP-only cookie
+      res.cookie("accesstoken", accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+      });
+
+      res.status(200).json({ accessToken });
+    } else {
+      res.status(401);
+      throw new Error("Invalid token, please login again");
+    }
+  } catch (error) {
+    // Handle token verification error
+    console.error("Token verification failed", error);
+    res.status(401);
+    throw new Error("Invalid token, please login again");
+  }
+});
+
 //@desc Get user profile
 //@route POST api/users/:id
 //@access private
@@ -127,6 +216,7 @@ const updateUser = asyncHandler(async (req, res) => {
 
 module.exports = {
   loginUser,
+  refreshTokenUser,
   getUser,
   createUser,
   updateUser,

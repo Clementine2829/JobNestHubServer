@@ -61,11 +61,17 @@ const createJob = asyncHandler(async (req, res) => {
   }
 });
 
-//@desc Get job
-//@route GET api/jobs/?action=(home|jobs|search|category|location)+&page=1&limit=10
+//@desc Get jobs, if action is included and q is empty, get all jobs,
+//  else if action is jobs, get all jobs, else if action is company,
+//  get all jobs by company, else if action is category, get all jobs
+//  by category, else if action is location, get all jobs by location
+//@route GET api/jobs/?action=(home|jobs|company|category|location)/q=(search|company|category|location)+&page=1&limit=10
 //@access public
 const getJobs = asyncHandler(async (req, res) => {
-  const jobs = await Job.getJobs();
+  const action = req.query.action;
+  const page = req.query.page;
+  const q = req.query.q;
+  const jobs = await Job.getJobs(action, q, page);
   if (jobs) {
     res.status(200).json(jobs);
   } else {
@@ -74,13 +80,56 @@ const getJobs = asyncHandler(async (req, res) => {
   }
 });
 
+//@desc Get related jobs
+//@route GET api/jobs/related/:category
+//@access public
+const getRelatedJobs = asyncHandler(async (req, res) => {
+  const category = req.params.category;
+  const jobs = await Job.getRelatedJobs(category);
+  if (jobs) {
+    res.status(200).json(jobs);
+  } else {
+    res.status(404);
+    throw new Error("Jobs not found");
+  }
+});
+
+//@desc Get jobs from "this" company
+//@route GET api/jobs/company/:id
+//@access public
+const getJobsByCompany = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+  const jobs = await Job.getJobsByCompany(id);
+  if (jobs) {
+    res.status(200).json(jobs);
+  } else {
+    res.status(404);
+    throw new Error("Jobs not found");
+  }
+});
+
 //@desc Get job profile
 //@route GET api/jobs/:id
 //@access public
 const getJobById = asyncHandler(async (req, res) => {
   const jobId = req.params.id;
-  const job = await Job.findJobById(jobId);
-
+  const includeRelatedJobs = req.query.related;
+  const includeCompanyJobs = req.query.comapny;
+  console.log(
+    "includeCompanyJobs ",
+    includeCompanyJobs,
+    includeCompanyJobs === true
+  );
+  console.log(
+    "includeCompanyJobs ",
+    includeRelatedJobs,
+    includeRelatedJobs === true
+  );
+  const job = await Job.findJobById(
+    jobId,
+    includeRelatedJobs,
+    includeCompanyJobs
+  );
   if (job) {
     res.status(200).json(job);
   } else {
@@ -199,6 +248,8 @@ const updateJob = asyncHandler(async (req, res) => {
 module.exports = {
   createJob,
   getJobByIdAdmin,
+  getRelatedJobs,
+  getJobsByCompany,
   getJobById,
   getJobApplications,
   getJobApplication,

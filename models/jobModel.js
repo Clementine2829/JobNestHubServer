@@ -1,7 +1,7 @@
 const db = require("../databases/jobs_database");
 const getCurrentDateAndTime = require("../getCurrentTime");
 
-async function findJobById(id) {
+async function findJobById(id, showRelatedJobs = true, showCompanyJobs = true) {
   const [job] = await db.execute(
     `
                 SELECT jobs.job_id, jobs.job_title, jobs.job_description, jobs.remote_work, jobs.job_type,
@@ -25,7 +25,11 @@ async function findJobById(id) {
                 LIMIT 1`,
     [id]
   );
-  return structuredJob(job[0]);
+  return (showRelatedJobs !== "undefined" && showRelatedJobs === true) ||
+    (showCompanyJobs !== "undefined" && showCompanyJobs === true)
+    ? structuredJob(job[0], showRelatedJobs, showCompanyJobs)
+    : structuredJob(job[0]);
+  // return structuredJob(job[0]);
 }
 
 async function findJobByCompany(companyId) {
@@ -110,20 +114,20 @@ async function getJobs(action = "", q = "", page = 1) {
   }
 }
 
-async function getRelatedJobs(jobCategoryId) {
-  const sql = `SELECT job_id, job_title 
+async function getRelatedJobs(jobId, jobCategoryId) {
+  const sql = `SELECT job_id, job_title, job_location, job_salary, date_created, closing_date 
    FROM jobs 
-   WHERE job_category = ? 
+   WHERE job_category = ? AND job_id != ? 
    LIMIT 5`;
-  const [jobs] = await db.execute(sql, [jobCategoryId]);
+  const [jobs] = await db.execute(sql, [jobCategoryId, jobId]);
   return jobs;
 }
-async function getJobsByCompany(companyId) {
-  const sql = `SELECT job_id, job_title 
+async function getJobsByCompany(jobId, companyId) {
+  const sql = `SELECT job_id, job_title, job_location, job_salary, date_created, closing_date 
    FROM jobs 
-   WHERE company_id = ? 
+   WHERE company_id = ? AND job_id != ? 
    LIMIT 5`;
-  const [jobs] = await db.execute(sql, [companyId]);
+  const [jobs] = await db.execute(sql, [companyId, jobId]);
   return jobs;
 }
 
@@ -144,7 +148,12 @@ async function getJobDuties(job) {
   return duties != 0 ? duties : [{ duty: "" }];
 }
 
-async function structuredJob(job, limit = 5) {
+async function structuredJob(
+  job,
+  limit = 5,
+  showRelatedJobs = true,
+  showCompanyJobs = true
+) {
   if (job) {
     const remoteWorkMap = {
       0: false,
@@ -163,6 +172,15 @@ async function structuredJob(job, limit = 5) {
       limit === 6 ? {} : await getJobQualifications(job.job_id);
     const jobDuties = limit === 6 ? {} : await getJobDuties(job.job_id);
 
+    const companyObject = JSON.parse(job.company);
+    const categoryObject = JSON.parse(job.category);
+    const relatedJobs = showRelatedJobs
+      ? await getRelatedJobs(job.job_id, categoryObject.category_id)
+      : [];
+    const companyJobs = showCompanyJobs
+      ? await getJobsByCompany(job.job_id, companyObject.company_id)
+      : [];
+
     const transformedJob = {
       ...job,
       remote_work: remoteWorkMap[job.remote_work],
@@ -171,6 +189,8 @@ async function structuredJob(job, limit = 5) {
       job_qualifications: jobQualifications,
       job_duties: jobDuties,
       likes: 5,
+      relatedJobs: relatedJobs,
+      companyJobs: companyJobs,
     };
     delete transformedJob.job_status;
     delete transformedJob.date_created;

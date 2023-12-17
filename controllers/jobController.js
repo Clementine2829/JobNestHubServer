@@ -113,8 +113,23 @@ const getJobsByCompany = asyncHandler(async (req, res) => {
 //@access public
 const getJobById = asyncHandler(async (req, res) => {
   const jobId = req.params.id;
-  const job = await Job.findJobById(jobId);
-
+  const includeRelatedJobs = req.query.related;
+  const includeCompanyJobs = req.query.comapny;
+  console.log(
+    "includeCompanyJobs ",
+    includeCompanyJobs,
+    includeCompanyJobs === true
+  );
+  console.log(
+    "includeCompanyJobs ",
+    includeRelatedJobs,
+    includeRelatedJobs === true
+  );
+  const job = await Job.findJobById(
+    jobId,
+    includeRelatedJobs,
+    includeCompanyJobs
+  );
   if (job) {
     res.status(200).json(job);
   } else {

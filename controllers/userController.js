@@ -170,11 +170,25 @@ const refreshTokenUser = asyncHandler(async (req, res) => {
 });
 
 //@desc Get user profile
-//@route POST api/users/:id
+//@route GET api/users/:id
 //@access private
 const getUser = asyncHandler(async (req, res) => {
   const userId = req.params.id;
   const user = await User.findUserById(userId);
+
+  if (user) {
+    res.status(200).json(user);
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
+});
+//@desc Get user profile in details
+//@route GET api/users/profile/:id
+//@access private
+const getUserProfile = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  const user = await User.findUserProfileById(userId);
 
   if (user) {
     res.status(200).json(user);
@@ -218,6 +232,7 @@ module.exports = {
   loginUser,
   refreshTokenUser,
   getUser,
+  getUserProfile,
   createUser,
   updateUser,
 };

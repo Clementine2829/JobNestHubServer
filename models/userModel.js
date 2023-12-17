@@ -12,13 +12,40 @@ async function findUserByEmail(email) {
 }
 async function findUserById(id) {
   const [user] = await db.execute(
-    `SELECT user_id, firstname, lastname, email, profile_status, date_created, date_updated 
+    `SELECT user_id, firstname, lastname, email, profile_status, user_type, date_created, date_updated 
     FROM users 
     WHERE user_id = ?
     LIMIT 1`,
     [id]
   );
   return user[0];
+}
+async function findUserProfileById(id) {
+  const user = await findUserById(id);
+  return structuredProfile(user);
+}
+async function structuredProfile(user) {
+  if (user) {
+    const profile = {
+      0: "activated",
+      1: "notActivated",
+      2: "disabled",
+    };
+
+    const modUser = {
+      ...user,
+      status: profile[user.profile_status],
+      role: user.user_type,
+      gender: "N/A",
+      dateOfBirth: "N/A",
+      phone: "N/A",
+      address: "N/A",
+    };
+    delete modUser.user_type;
+    delete modUser.profile_status;
+    return modUser;
+  }
+  return {};
 }
 
 async function createUser(user) {
@@ -63,6 +90,7 @@ async function updateUser(updatedUserData) {
 module.exports = {
   findUserByEmail,
   findUserById,
+  findUserProfileById,
   createUser,
   updateUser,
 };

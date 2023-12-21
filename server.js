@@ -7,13 +7,32 @@ const jobRoutes = require("./routes/jobRoutes");
 const errorHandler = require("./middleware/errorHandling");
 const { constants } = require("./middleware/constants");
 const logger = require("./logger");
+const https = require("https");
+const fs = require("fs");
 
 const app = express();
 const port = process.env.PORT || 5000;
 
+const privateKey = fs.readFileSync("./certificates/key.pem", "utf8");
+const certificate = fs.readFileSync("./certificates/cert.pem", "utf8");
+const credentials = { key: privateKey, cert: certificate };
+
 app.use(cookieParser());
-// Allow requests from 'http://localhost:3000'
-app.use(cors({ origin: "http://localhost:3000" }));
+const corsOptions = {
+  origin: "https://localhost:3000",
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+//   res.header("Access-Control-Allow-Credentials", true);
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content-Type, Accept"
+//   );
+//   next();
+// });
 
 // logger.info('This is an info message');
 // logger.warn('This is a warning message');
@@ -23,7 +42,8 @@ app.use(cors({ origin: "http://localhost:3000" }));
 //   next();
 // });
 app.all("*", (req, res, next) => {
-  console.log(req.url);
+  console.log("Received request:", req.method, req.url);
+  console.log("Headers:", req.headers);
   next();
 });
 
@@ -43,6 +63,7 @@ app.use(errorHandler);
 // Use the error handling middleware
 // app.use(errorHandler);
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+const httpsServer = https.createServer(credentials, app);
+httpsServer.listen(port, () => {
+  console.log(`Server is running on https://localhost:${port}`);
 });

@@ -41,11 +41,11 @@ app.use(cors(corsOptions));
 //   logger.info(`[${req.method}] ${req.url}`);
 //   next();
 // });
-app.all("*", (req, res, next) => {
-  console.log("Received request:", req.method, req.url);
-  console.log("Headers:", req.headers);
-  next();
-});
+// app.all("*", (req, res, next) => {
+//   console.log("Received request:", req.method, req.url);
+//   console.log("Headers:", req.headers);
+//   next();
+// });
 
 app.use(express.json());
 app.use("/api/v1/users", userRoutes);
@@ -53,7 +53,7 @@ app.use("/api/v1/companies", companyRoutes);
 app.use("/api/v1/jobs", jobRoutes);
 
 app.all("*", (req, res, next) => {
-  console.log(req.url);
+  // console.log(req.url);
   res.status(constants.NOT_FOUND);
   throw new Error("Not found");
 });

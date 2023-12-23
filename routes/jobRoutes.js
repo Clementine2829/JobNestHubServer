@@ -21,10 +21,10 @@ router.get("/", getJobs);
 router.get("/related/:category", getRelatedJobs);
 router.get("/company/:id", getJobsByCompany);
 router.get("/admin/:id", validateToken, getJobByIdAdmin);
-router.get("/:id", getJobById);
-router.get("/applications/:id", validateToken, getJobApplications);
+router.get("/applications", validateToken, getJobApplications);
 router.get("/applications/:userId/:jobId", validateToken, getJobApplication);
-router.post("/applications/:jobId", validateToken, applyForJob);
+router.get("/:id", getJobById);
+router.post("/applications/:jobId/apply", validateToken, applyForJob);
 router.post("/", validateToken, createJob);
 router.put("/:id", validateToken, updateJob);
 

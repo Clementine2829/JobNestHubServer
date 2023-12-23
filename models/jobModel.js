@@ -61,11 +61,13 @@ async function findJobByCompany(companyId) {
 // url ?action=(home|jobs|search|company|category|location)+&page=1&limit=10
 async function getJobs(action = "", q = "", page = 1) {
   let limit = 5;
+  let _action = "";
   if (!/(home|jobs|company|category|location)/.test(action)) action = "";
   if (action === "home") limit = 6;
   // console.log("action " + action);
   // console.log("query " + q);
   // console.log("limit  " + limit);
+  // console.log("page  " + page);
   if (q !== "") {
     q = ` AND (jobs.job_title LIKE '%${q}%' 
                 OR jobs.job_description LIKE '%${q}%' 
@@ -76,11 +78,11 @@ async function getJobs(action = "", q = "", page = 1) {
                 OR jobs.job_description LIKE '%${q}%')`;
   }
 
-  if (action === "home") action = ``;
-  else if (action === "jobs") action = ``;
-  else if (action === "company") action = ``;
-  else if (action === "category") action = ``;
-  else if (action === "location") action = ``;
+  if (action === "home") _action = ``;
+  else if (action === "jobs") _action = ``;
+  else if (action === "company") _action = ``;
+  else if (action === "category") _action = ``;
+  else if (action === "location") _action = ``;
 
   let sql = ` SELECT jobs.job_id, jobs.job_title, jobs.job_description, jobs.remote_work, jobs.job_type,
     jobs.job_salary, jobs.job_location, jobs.job_status, 
@@ -99,16 +101,21 @@ async function getJobs(action = "", q = "", page = 1) {
     FROM jobs
         INNER JOIN company ON jobs.company_id = company.company_id
         INNER JOIN job_category ON jobs.job_category  = job_category.category_id
-    WHERE jobs.job_status = 1 ${q} ${action}
+    WHERE jobs.job_status = 1 ${q} ${_action}
     ORDER BY jobs.date_created DESC
     LIMIT ${limit} 
     OFFSET ${page * limit - limit}`;
+  const sqlTotal = `SELECT COUNT(*) AS total FROM jobs WHERE jobs.job_status = 1 ${q} ${_action}`;
   const [jobs] = await db.execute(sql);
+  const [total] = await db.execute(sqlTotal);
   if (jobs.length > 0) {
     const structuredJobs = await Promise.all(
       jobs.map((job) => structuredJob(job, limit))
     );
-    return structuredJobs;
+    const totalJobs = total[0].total;
+    return action === "home"
+      ? { jobs: structuredJobs }
+      : { jobs: structuredJobs, totalJobs };
   } else {
     return [];
   }
@@ -227,10 +234,7 @@ async function createJob(job) {
 
   // check if the job exist for this company
 
-  console.log(job);
-
   job_ref = await generateRandomCapsAndNumbers(10);
-  console.log(job_ref);
   const currentTime = await getCurrentDateAndTime();
 
   const [result] = await db.execute(
@@ -272,25 +276,26 @@ async function generateRandomCapsAndNumbers(length) {
 
 async function getJobApplications(id, action) {
   if (action === "jobs") {
-    console.log("jobs");
     const [applications] = await db.execute(
       `SELECT * FROM job_applications WHERE job_id = ? LIMIT 10`,
       [id]
     );
     return structuredJobApplications(applications);
   } else if (action === "admin") {
-    console.log("admin");
     const [applications] = await db.execute(
       `SELECT * FROM job_applications Limit 10`
     );
     return structuredJobApplications(applications);
   } else {
     // else get job applications for a user
-    const [applications] = await db.execute(
-      `SELECT * FROM job_applications WHERE user_id = ? LIMIT 10`,
-      [id]
-    );
-    console.log("user");
+    const sql = `
+    SELECT jobs.job_title, company.company_name, job_applications.* 
+    FROM ((jobs
+      INNER JOIN job_applications ON jobs.job_id = job_applications.job_id)
+      INNER JOIN company ON jobs.company_id = company.company_id)
+    WHERE job_applications.user_id = ? 
+    LIMIT 10 `;
+    const [applications] = await db.execute(sql, [id]);
     return structuredJobApplications(applications);
   }
 }
@@ -303,9 +308,13 @@ function structuredJobApplications(jobs) {
       2: "Rejected",
     };
 
-    const transformedJobs = jobs.map((job) => ({
-      ...job,
-      application_status: jobStatus[job.application_status],
+    const transformedJobs = jobs.map((job, index) => ({
+      index,
+      company: job.company_name,
+      job: job.job_title,
+      jobId: job.job_id,
+      status: jobStatus[job.application_status],
+      dateMod: job.date_updated,
     }));
 
     return transformedJobs;
@@ -323,13 +332,14 @@ async function getJobApplication(userId, jobId) {
 }
 
 async function applyForJob({ user_id, job_id }) {
+  console.log("hey bhey ", user_id, job_id);
   const currentTime = await getCurrentDateAndTime();
   const [result] = await db.execute(
     `INSERT INTO job_applications (user_id, job_id, date_created) VALUES (?, ?, ?)`,
     [user_id, job_id, currentTime]
   );
   if (result.affectedRows === 1) {
-    return getJobApplication(user_id, job_id);
+    return { status: "success" };
   } else {
     throw new Error("Job application failed.");
   }

@@ -73,7 +73,8 @@ const loginUser = asyncHandler(async (req, res) => {
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1m" }
+      // { expiresIn: "1m" }
+      { expiresIn: "50m" }
     );
     const refreshToken = jwt.sign(
       {
@@ -86,26 +87,26 @@ const loginUser = asyncHandler(async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    console.log(user);
-    // res.cookie("refreshToken", refreshToken, {
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      // secure: true,
+      sameSite: "None",
+    });
+    // res.cookie("accessToken", accessToken, {
     //   httpOnly: true,
     //   secure: true,
     //   sameSite: "None",
     // });
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-    });
     // res.status(200).json({ refreshToken });
     // const userRole = {
     //   0: "basic",
     //   1: "manager",
     //   2: "admin",
     // };
-
+    // console.log(refreshToken);
     res.status(200).json({
-      refreshToken: refreshToken,
+      accessToken: accessToken,
       success: true,
       userRole: user.user_type,
       userId: user.user_id,
@@ -187,7 +188,7 @@ const getUser = asyncHandler(async (req, res) => {
 //@route GET api/users/profile/:id
 //@access private
 const getUserProfile = asyncHandler(async (req, res) => {
-  const userId = req.params.id;
+  const userId = req.user.id;
   const user = await User.findUserProfileById(userId);
 
   if (user) {
@@ -199,7 +200,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 //@desc Update user
-//@route POST api/users/login
+//@route POST api/users/update
 //@access private
 const updateUser = asyncHandler(async (req, res) => {
   const userId = req.params.id;

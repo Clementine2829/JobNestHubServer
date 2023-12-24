@@ -115,16 +115,6 @@ const getJobById = asyncHandler(async (req, res) => {
   const jobId = req.params.id;
   const includeRelatedJobs = req.query.related;
   const includeCompanyJobs = req.query.comapny;
-  console.log(
-    "includeCompanyJobs ",
-    includeCompanyJobs,
-    includeCompanyJobs === true
-  );
-  console.log(
-    "includeCompanyJobs ",
-    includeRelatedJobs,
-    includeRelatedJobs === true
-  );
   const job = await Job.findJobById(
     jobId,
     includeRelatedJobs,
@@ -158,8 +148,7 @@ const getJobByIdAdmin = asyncHandler(async (req, res) => {
 //@route GET api/jobs/applications/:id?action=(jobs|admin)
 //@access private
 const getJobApplications = asyncHandler(async (req, res) => {
-  console.log(req);
-  const id = req.params.id;
+  const id = req.user.id;
   //   const action = req.query.action.match("/(jobs|admin)/")[0];
   const action = req.query.action;
   const jobApplications = await Job.getJobApplications(id, action);
@@ -172,12 +161,13 @@ const getJobApplications = asyncHandler(async (req, res) => {
 });
 
 //@desc Apply for a job
-//@route POST api/jobs/applications/:jobId?action=apply
+//@route POST api/jobs/applications/:jobId/apply
 //@access private
 const applyForJob = asyncHandler(async (req, res) => {
   const jobId = req.params.jobId;
   const userId = req.user.id;
-  if (Job.getJobApplication(userId, jobId)) {
+  const _jobApplication = await Job.getJobApplication(userId, jobId);
+  if (_jobApplication.length > 0) {
     res.status(400);
     throw new Error("You have already applied for this job");
   }
@@ -185,7 +175,6 @@ const applyForJob = asyncHandler(async (req, res) => {
     user_id: userId,
     job_id: jobId,
   });
-
   if (jobApplication) {
     res.status(200).json(jobApplication);
   } else {

@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const { json } = require("express");
 const crypto = require("crypto");
+const { subscribe } = require("diagnostics_channel");
 
 //@desc Register a new user
 //@route POST api/users/register
@@ -20,12 +21,8 @@ const createUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("User already registered");
   }
-
-  // Generate a random 45-character hexadecimal ID
   const userId = crypto.randomBytes(22).toString("hex");
-
   const hashedPassword = await bcrypt.hash(password, 10);
-
   const user = await User.createUser({
     id: userId,
     firstName,
@@ -229,6 +226,26 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
+//@desc Make email subscriptions
+//@route POST api/users/subscribe
+//@access private
+const emailSubscription = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const exist = await User.getEmailSubscription(email);
+  if (exist) {
+    res.status(200).json({ status: "success" });
+  } else {
+    const id = crypto.randomBytes(7).toString("hex");
+    const subscribe = await User.emailSubscription(id, email);
+    if (subscribe) {
+      res.status(200).json(subscribe);
+    } else {
+      res.status(401);
+      throw new Error("Subscription failed.");
+    }
+  }
+});
+
 module.exports = {
   loginUser,
   refreshTokenUser,
@@ -236,4 +253,5 @@ module.exports = {
   getUserProfile,
   createUser,
   updateUser,
+  emailSubscription,
 };

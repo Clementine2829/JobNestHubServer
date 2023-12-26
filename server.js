@@ -46,7 +46,6 @@ app.use(cors(corsOptions));
 //   console.log("Headers:", req.headers);
 //   next();
 // });
-
 app.use(express.json());
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/companies", companyRoutes);

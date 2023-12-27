@@ -3,33 +3,28 @@ const getCurrentDateAndTime = require("../getCurrentTime");
 
 async function findJobById(id, showRelatedJobs = true, showCompanyJobs = true) {
   const [job] = await db.execute(
-    `
-                SELECT jobs.job_id, jobs.job_title, jobs.job_description, jobs.remote_work, jobs.job_type,
-                    jobs.job_salary, jobs.job_location, jobs.job_status, 
-                    jobs.closing_date, jobs.date_created, jobs.date_updated, jobs.job_ref,
-                    JSON_OBJECT(
-                        'company_id', company.company_id, 
-                        'company_name', company.company_name,
-                        'company_description', company.company_description,
-                        'company_logo', company.company_logo
-                    ) AS company, 
-                        JSON_OBJECT(
-                            'category_id', job_category.category_id, 
-                            'category_name', job_category.category_name
-                        
-                    ) AS category
-                FROM jobs
-                    INNER JOIN company ON jobs.company_id = company.company_id 
-                    INNER JOIN job_category ON jobs.job_category  = job_category.category_id
-                WHERE jobs.job_id = ? 
-                LIMIT 1`,
+    `SELECT jobs.job_id, jobs.job_title, jobs.job_description, jobs.remote_work, jobs.job_type,
+          jobs.job_salary, jobs.job_location, jobs.job_status, 
+          jobs.closing_date, jobs.date_created, jobs.date_updated, jobs.job_ref,
+          JSON_OBJECT(
+              'company_id', company.company_id, 
+              'company_name', company.company_name,
+              'company_description', company.company_description,
+              'company_logo', company.company_logo
+          ) AS company, 
+              JSON_OBJECT(
+                  'category_id', job_category.category_id, 
+                  'category_name', job_category.category_name
+              
+          ) AS category
+      FROM jobs
+          INNER JOIN company ON jobs.company_id = company.company_id 
+          INNER JOIN job_category ON jobs.job_category  = job_category.category_id
+      WHERE jobs.job_id = ? 
+      LIMIT 1`,
     [id]
   );
-  return (showRelatedJobs !== "undefined" && showRelatedJobs === true) ||
-    (showCompanyJobs !== "undefined" && showCompanyJobs === true)
-    ? structuredJob(job[0], showRelatedJobs, showCompanyJobs)
-    : structuredJob(job[0]);
-  // return structuredJob(job[0]);
+  return structuredJob(job[0], 1, showRelatedJobs, showCompanyJobs);
 }
 
 async function findJobByCompany(companyId) {
@@ -110,7 +105,7 @@ async function getJobs(action = "", q = "", page = 1) {
   const [total] = await db.execute(sqlTotal);
   if (jobs.length > 0) {
     const structuredJobs = await Promise.all(
-      jobs.map((job) => structuredJob(job, limit))
+      jobs.map((job) => structuredJob(job, limit, false, false))
     );
     const totalJobs = total[0].total;
     return action === "home"

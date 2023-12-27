@@ -133,7 +133,9 @@ const getJobById = asyncHandler(async (req, res) => {
 //@access public
 const getJobByIdAdmin = asyncHandler(async (req, res) => {
   const jobId = req.params.id;
-  const job = await Job.findJobById(jobId);
+  const userRole = req.user.userType === "Manager";
+  console.log(req.user);
+  const job = await Job.findJobById(jobId, !userRole, !userRole);
   if (job) {
     res.status(200).json(job);
   } else {

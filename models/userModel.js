@@ -72,6 +72,26 @@ async function createUser(user) {
   }
 }
 
+async function emailSubscription(id, email) {
+  const [result] = await db.execute(
+    `INSERT INTO 
+    subscribers (subscriber_id, email) 
+    VALUES (?, ?)`,
+    [id, email]
+  );
+
+  if (result.affectedRows === 1) {
+    return { status: "success" };
+  } else {
+    throw new Error("User creation failed.");
+  }
+}
+async function getEmailSubscription(email) {
+  const sql = `SELECT subscriber_id FROM subscribers WHERE email = ? LIMIT 1`;
+  const [user] = await db.execute(sql, [email]);
+  return user.length > 0;
+}
+
 async function updateUser(updatedUserData) {
   const currentTime = await getCurrentDateAndTime();
   const [result] = await db.execute(
@@ -93,4 +113,6 @@ module.exports = {
   findUserProfileById,
   createUser,
   updateUser,
+  emailSubscription,
+  getEmailSubscription,
 };

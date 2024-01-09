@@ -3,7 +3,7 @@ const getCurrentDateAndTime = require("../getCurrentTime");
 
 async function findJobById(id, showRelatedJobs = true, showCompanyJobs = true) {
   const [job] = await db.execute(
-    `SELECT jobs.job_id, jobs.job_title, jobs.job_description, jobs.remote_work, jobs.job_type,
+    `SELECT jobs.job_id, jobs.job_title, jobs.email, jobs.job_description, jobs.remote_work, jobs.job_type,
           jobs.job_salary, jobs.job_location, jobs.job_status, 
           jobs.closing_date, jobs.date_created, jobs.date_updated, jobs.job_ref,
           JSON_OBJECT(
@@ -189,6 +189,8 @@ async function structuredJob(
       job_type: jobTypeMap[job.job_type],
       job_requirements: jobRequrements,
       job_qualifications: jobQualifications,
+      job_salary_min: job.job_salary.split("-")[0],
+      job_salary_max: job.job_salary.split("-")[1],
       job_duties: jobDuties,
       likes: 5,
       relatedJobs: relatedJobs,
@@ -196,6 +198,7 @@ async function structuredJob(
     };
     delete transformedJob.job_status;
     delete transformedJob.date_created;
+    delete transformedJob.job_salary;
     return transformedJob;
   } else {
     return {};

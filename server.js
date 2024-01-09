@@ -13,9 +13,18 @@ const fs = require("fs");
 const app = express();
 const port = process.env.PORT || 5000;
 
-const privateKey = fs.readFileSync("./certificates/key.pem", "utf8");
-const certificate = fs.readFileSync("./certificates/cert.pem", "utf8");
-const credentials = { key: privateKey, cert: certificate };
+// const privateKey = fs.readFileSync("./certificates/key.pem", "utf8");
+// const certificate = fs.readFileSync("./certificates/cert.pem", "utf8");
+// const credentials = { key: privateKey, cert: certificate };
+
+// const privateKey = fs.readFileSync("./certificates/key.pem", "utf8");
+// const certificate = fs.readFileSync("./certificates/cert.pem", "utf8");
+// const credentials = { key: privateKey, cert: certificate };
+
+const credentials = {
+  key: fs.readFileSync("./certificates/private-key.pem"),
+  cert: fs.readFileSync("./certificates/server-cert.pem"),
+};
 
 app.use(cookieParser());
 const corsOptions = {

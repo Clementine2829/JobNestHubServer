@@ -2,56 +2,98 @@ const asyncHandler = require("express-async-handler");
 const Job = require("../models/jobModel");
 const { json } = require("express");
 const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 //@desc Create a new job
 //@route POST api/jobs
 //@access private
-const createJob = asyncHandler(async (req, res) => {
-  const {
-    jobTitle,
-    companyId,
-    jobDescription,
-    remoteWork,
-    jobType,
-    jobSalary,
-    jobCategory,
-    jobLocation,
-    closingDate,
-  } = req.body;
-  if (
-    !jobTitle ||
-    !companyId ||
-    !jobDescription ||
-    !remoteWork ||
-    !jobType ||
-    !jobSalary
-  ) {
-    console.log(req.body);
-    res.status(400);
-    throw new Error("All fields with * are required");
-  }
-  // const jobExist = await Job.findJobById(id);
-  // if(jobAvailable){
-  //     res.status(400);
-  //     throw new Error("Job already registered");
+const updateJob = asyncHandler(async (req, res) => {
+  const job_id = req.params.id;
+
+  // if (job_id) {
+  //   // find job by id
+  //   const _job = await Job.findJobById(job_id);
+  //   if (_job) {
+  //     // update job
+  //     const job = await Job.updateJob(job_id, req.body);
+  //     if (job) {
+  //       res.status(200).json(job);
+  //     } else {
+  //       res.status(400);
+  //       throw new Error("Job data is not valid");
+  //     }
+  //   } else {
+  //     res.status(404);
+  //     throw new Error("Job not found");
+  //   }
+  // } else {
+  //   res.status(400);
+  //   throw new Error("Job id is required");
   // }
 
-  // Generate a random 45-character hexadecimal ID
-  const jobId = crypto.randomBytes(22).toString("hex");
-  const job = await Job.createJob({
-    job_id: jobId,
-    company_id: companyId,
-    job_title: jobTitle,
-    job_description: jobDescription,
-    remote_work: remoteWork,
-    job_type: jobType,
-    // work_type:workType,
-    job_salary: jobSalary,
-    job_category: jobCategory,
-    job_location: jobLocation,
-    // job_status:jobStatus,
-    closing_date: closingDate,
-  });
+  const job = req.body;
+  console.log("job", job);
+  // const {
+  //   job_id,
+  //   jobTitle,
+  //   companyId,
+  //   jobDescription,
+  //   remoteWork,
+  //   jobType,
+  //   jobSalary,
+  //   jobCategory,
+  //   jobLocation,
+  //   closingDate,
+  // } = req.body;
+
+  // if(job_id){
+  //   const _job = await Job.updateJob({
+  //     job_id,
+  //     jobTitle,
+  //     companyId,
+  //     jobDescription,
+  //     remoteWork,
+  //     jobType,
+  //     jobSalary,
+  //     jobCategory,
+  //     jobLocation,
+  //     closingDate,
+  //   });
+
+  // if (
+  //   !jobTitle ||
+  //   !companyId ||
+  //   !jobDescription ||
+  //   !remoteWork ||
+  //   !jobType ||
+  //   !jobSalary
+  // ) {
+  //   // console.log(req.body);
+  //   res.status(400);
+  //   throw new Error("All fields with * are required");
+  // }
+  // // const jobExist = await Job.findJobById(id);
+  // // if(jobAvailable){
+  // //     res.status(400);
+  // //     throw new Error("Job already registered");
+  // // }
+
+  // // Generate a random 45-character hexadecimal ID
+  // const jobId = crypto.randomBytes(22).toString("hex");
+  // const job = await Job.createJob({
+  //   job_id: jobId,
+  //   company_id: companyId,
+  //   job_title: jobTitle,
+  //   job_description: jobDescription,
+  //   remote_work: remoteWork,
+  //   job_type: jobType,
+  //   // work_type:workType,
+  //   job_salary: jobSalary,
+  //   job_category: jobCategory,
+  //   job_location: jobLocation,
+  //   // job_status:jobStatus,
+  //   closing_date: closingDate,
+  // });
 
   if (job) {
     res.status(200).json(job);
@@ -134,7 +176,7 @@ const getJobById = asyncHandler(async (req, res) => {
 const getJobByIdAdmin = asyncHandler(async (req, res) => {
   const jobId = req.params.id;
   const userRole = req.user.userType === "Manager";
-  console.log(req.user);
+  // console.log(req.user);
   const job = await Job.findJobById(jobId, !userRole, !userRole);
   if (job) {
     res.status(200).json(job);
@@ -166,23 +208,59 @@ const getJobApplications = asyncHandler(async (req, res) => {
 //@route POST api/jobs/applications/:jobId/apply
 //@access private
 const applyForJob = asyncHandler(async (req, res) => {
-  const jobId = req.params.jobId;
-  const userId = req.user.id;
-  const _jobApplication = await Job.getJobApplication(userId, jobId);
-  if (_jobApplication.length > 0) {
-    res.status(400);
-    throw new Error("You have already applied for this job");
-  }
-  const jobApplication = await Job.applyForJob({
-    user_id: userId,
-    job_id: jobId,
+  // Access form values, skills, and CV file
+  const { formValues, toEmail, body, fileName } = req.body;
+  const cvFile = req.file;
+
+  // Send email using nodemailer
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "your-email@gmail.com", // replace with your email
+      pass: "your-email-password", // replace with your email password or use an app password
+    },
   });
-  if (jobApplication) {
-    res.status(200).json(jobApplication);
-  } else {
-    res.status(401);
-    throw new Error("Job application failed.");
-  }
+
+  const mailOptions = {
+    from: formValues.fromEmail, // replace with your email
+    to: toEmail, // replace with the recipient's email
+    subject: formValues.subject,
+    text: body,
+    attachments: [
+      {
+        filename: fileName, // replace with the desired filename
+        content: cvFile.buffer, // file content
+      },
+    ],
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("Error sending email:", error);
+      res.status(500).json({ error: "Failed to send email" });
+    } else {
+      console.log("Email sent:", info.response);
+      res.status(200).json({ message: "Email sent successfully" });
+    }
+  });
+
+  // const jobId = req.params.jobId;
+  // const userId = req.user.id;
+  // const _jobApplication = await Job.getJobApplication(userId, jobId);
+  // if (_jobApplication.length > 0) {
+  //   res.status(400);
+  //   throw new Error("You have already applied for this job");
+  // }
+  // const jobApplication = await Job.applyForJob({
+  //   user_id: userId,
+  //   job_id: jobId,
+  // });
+  // if (jobApplication) {
+  //   res.status(200).json(jobApplication);
+  // } else {
+  //   res.status(401);
+  //   throw new Error("Job application failed.");
+  // }
 });
 
 //@desc Get job application
@@ -200,44 +278,44 @@ const getJobApplication = asyncHandler(async (req, res) => {
   }
 });
 
-//@desc Update job
-//@route PUT api/jobs/:id
-//@access private
-const updateJob = asyncHandler(async (req, res) => {
-  const jobId = req.params.id;
-  const { name, description, email, website, phone, logo } = req.body;
+// //@desc Update job
+// //@route PUT api/jobs/:id
+// //@access private
+// const updateJob = asyncHandler(async (req, res) => {
+//   const jobId = req.params.id;
+//   const { name, description, email, website, phone, logo } = req.body;
 
-  if (!name || !description || !email || !phone) {
-    res.status(400);
-    throw new Error("All fields are required");
-  }
+//   if (!name || !description || !email || !phone) {
+//     res.status(400);
+//     throw new Error("All fields are required");
+//   }
 
-  const existingJob = await Job.getJobById(jobId);
-  if (!existingJob) {
-    res.status(404);
-    throw new Error("Job not found");
-  }
+//   const existingJob = await Job.getJobById(jobId);
+//   if (!existingJob) {
+//     res.status(404);
+//     throw new Error("Job not found");
+//   }
 
-  const updatedJob = await Job.updateJob({});
+//   const updatedJob = await Job.updateJob({});
 
-  if (updateJob === 1) {
-    res.status(200).json({
-      // company_id:companyId,
-      // company_name:name,
-      // company_description:description,
-      // company_email:email,
-      // company_website:website,
-      // company_phone:phone,
-      // company_logo:logo
-    });
-  } else {
-    res.status(401);
-    throw new Error("Job update failed.");
-  }
-});
+//   if (updateJob === 1) {
+//     res.status(200).json({
+//       // company_id:companyId,
+//       // company_name:name,
+//       // company_description:description,
+//       // company_email:email,
+//       // company_website:website,
+//       // company_phone:phone,
+//       // company_logo:logo
+//     });
+//   } else {
+//     res.status(401);
+//     throw new Error("Job update failed.");
+//   }
+// });
 
 module.exports = {
-  createJob,
+  updateJob,
   getJobByIdAdmin,
   getRelatedJobs,
   getJobsByCompany,
@@ -246,5 +324,4 @@ module.exports = {
   getJobApplication,
   applyForJob,
   getJobs,
-  updateJob,
 };
